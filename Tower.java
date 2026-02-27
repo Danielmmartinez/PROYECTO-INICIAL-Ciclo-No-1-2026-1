@@ -181,9 +181,9 @@ public class Tower {
         int centerX = can.getWidth() / 2;
         int floorY = can.getHeight() - 50; 
         
-        int currentBaseY = floorY; 
-        int currentTopY = floorY;  // El punto más alto de TODA la torre
-        int lastId = Integer.MAX_VALUE; 
+        int currentBaseY = floorY;    // Suelo para encaje (fondo de la taza actual)
+        int visualTopY = floorY;     // Techo visual (donde se apoya lo que va ENCIMA)
+        int lastCupId = Integer.MAX_VALUE; 
     
         for (Object obj : stackedElements) {
             if (obj instanceof Cup) {
@@ -193,41 +193,39 @@ public class Tower {
                 int xPos = centerX - (currentId * 10 / 2);
                 int yPos;
     
-                if (currentId < lastId) {
-                    // ENCAJE INTERNO: Se apila sobre el fondo de la taza anterior
+                if (currentId < lastCupId) {
+                    // ENCAJE: Ignora donde esté el visualTopY, va al fondo de la taza
                     yPos = currentBaseY - cupHeightPx - 10; 
-                    // El nuevo suelo para tazas MÁS pequeñas es el fondo de esta
-                    currentBaseY = yPos + cupHeightPx; 
                 } else {
-                    // APILADO EXTERNO: Se apila sobre el borde más alto hasta ahora (TopY)
-                    yPos = currentTopY - cupHeightPx;
-                    // El nuevo suelo para tazas pequeñas es el fondo de esta nueva taza base
-                    currentBaseY = yPos + cupHeightPx; 
+                    // APILADO: Se apoya en lo más alto que haya (taza o tapa)
+                    yPos = visualTopY - cupHeightPx;
                 }
     
                 c.setPosition(xPos, yPos);
                 c.makeVisible();
     
-                // Actualizamos el punto más alto global de la torre
-                currentTopY = Math.min(currentTopY, yPos);
-                lastId = currentId;
+                // Actualizamos referencias de Taza
+                visualTopY = yPos;               // El nuevo techo es el borde de esta taza
+                currentBaseY = yPos + cupHeightPx; // El nuevo suelo interno para encaje
+                lastCupId = currentId;
     
             } else if (obj instanceof Lid) {
                 Lid l = (Lid) obj;
                 int xPos = centerX - (l.getId() * 10 / 2);
                 
-                // La tapa se pone sobre el último objeto (sea taza o tapa)
-                // Pero usamos una variable temporal para no arruinar el currentTopY de las tazas
-                int yPosLid = currentTopY - 10;
+                // La tapa SIEMPRE se posa sobre el visualTopY (el borde de la taza de abajo)
+                int yPosLid = visualTopY - 10;
                 
                 l.setPosition(xPos, yPosLid);
                 l.makeVisible();
                 
-                // Actualizamos el tope global y el suelo para que lo que venga encima 
-                // de la tapa descanse sobre ella
-                currentTopY = yPosLid;
-                currentBaseY = yPosLid;
-                lastId = 0; // Una tapa bloquea el encaje interno, la siguiente taza irá arriba
+                // LA CLAVE: 
+                // La tapa actualiza el TECHO VISUAL (lo siguiente que se APILA va sobre ella)
+                visualTopY = yPosLid;
+                
+                // PERO NO ACTUALIZA el currentBaseY ni el lastCupId.
+                // Así, si viene una taza pequeña, "sabe" que todavía puede bajar al fondo
+                // de la taza que estaba antes de la tapa.
             }
         }
     }

@@ -13,7 +13,8 @@ public class Lid {
     public void setPosition(int newX, int newY) {
         visual.moveHorizontal(newX - xAct);
         visual.moveVertical(newY - yAct);
-        xAct = newX; yAct = newY;
+        xAct = newX; 
+        yAct = newY;
     }
 
     public void setColor(String c) { visual.changeColor(c); }
