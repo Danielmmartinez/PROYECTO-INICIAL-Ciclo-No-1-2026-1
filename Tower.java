@@ -1,6 +1,12 @@
 import java.util.*;
+import java.awt.Point;
 import javax.swing.JOptionPane;
 
+/**
+ * Gestiona la simulación de una torre de tazas apilables.
+ * Controla las reglas de encaje, alturas máximas y renderizado de tazas y tapas.
+ * @version 2.4
+ */
 public class Tower {
     private int width, maxHeight;
     private boolean isVisible, lastOperationOk;
@@ -9,6 +15,11 @@ public class Tower {
     private ArrayList<Object> stackedElements;
     private ArrayList<Rectangle> rulerMarks;
 
+    /**
+     * Constructor principal que define los límites de la torre.
+     * @param width Ancho del área de la torre.
+     * @param maxHeight Altura máxima permitida para apilar en la torre.
+     */
     public Tower(int width, int maxHeight) {
         this.width = width;
         this.maxHeight = maxHeight;
@@ -19,7 +30,20 @@ public class Tower {
         this.lastOperationOk = true;
     }
 
+    /**
+     * Constructor de extensión (Requisito 10) que crea una torre y genera 
+     * automáticamente un número específico de tazas.
+     * @param cups La cantidad de tazas a generar (de 1 hasta 'cups').
+     */
+    public Tower(int cups) {
+        this(100, 1000); // Valores por defecto para que quepan las tazas
+        for (int i = 1; i <= cups; i++) {
+            pushCup(i);
+        }
+    }
+
     // --- MÉTODOS DE TAZAS ---
+    
     public void pushCup(int i) {
         if (cups.containsKey(i)) {
             lastOperationOk = false;
@@ -60,10 +84,14 @@ public class Tower {
     }
 
     // --- MÉTODOS DE TAPAS ---
+    
     public void pushLid(int i) {
         if (lids.containsKey(i)) { lastOperationOk = false; return; }
+        
         Lid l = new Lid(i);
-        if (cups.containsKey(i)) l.setColor(cups.get(i).getColor());
+        if (cups.containsKey(i)) {
+            l.setColor(cups.get(i).getColor());
+        }
         
         if (checkHeight(l)) {
             lids.put(i, l);
@@ -98,19 +126,14 @@ public class Tower {
     }
 
     // --- LÓGICA DE TORRE ---
+    
     public void orderTower() {
         List<Integer> ids = new ArrayList<>(cups.keySet());
         Collections.sort(ids, Collections.reverseOrder());
         stackedElements.clear();
-        // Primero todas las tazas de mayor a menor (encajan correctamente)
-        for (int id : ids) {
-            stackedElements.add(cups.get(id));
-        }
-        // Luego las tapas de menor a mayor (se colocan sobre sus tazas ya encajadas)
+        for (int id : ids) { stackedElements.add(cups.get(id)); }
         Collections.sort(ids);
-        for (int id : ids) {
-            if (lids.containsKey(id)) stackedElements.add(lids.get(id));
-        }
+        for (int id : ids) { if (lids.containsKey(id)) stackedElements.add(lids.get(id)); }
         updateView();
         lastOperationOk = true;
     }
@@ -119,6 +142,52 @@ public class Tower {
         Collections.reverse(stackedElements);
         updateView();
         lastOperationOk = true;
+    }
+
+    /**
+     * Intercambia la posición de dos objetos específicos en la torre (Requisito 11).
+     */
+    public void swap(String[] o1, String[] o2) {
+        if (o1 == null || o2 == null || o1.length < 2 || o2.length < 2) {
+            lastOperationOk = false;
+            reportError("Parámetros de intercambio inválidos.");
+            return;
+        }
+
+        Object obj1 = findObject(o1);
+        Object obj2 = findObject(o2);
+
+        if (obj1 == null || obj2 == null) {
+            lastOperationOk = false;
+            reportError("Uno o ambos objetos no se encuentran en la torre.");
+            return;
+        }
+
+        int index1 = stackedElements.indexOf(obj1);
+        int index2 = stackedElements.indexOf(obj2);
+
+        if (index1 != -1 && index2 != -1) {
+            stackedElements.set(index1, obj2);
+            stackedElements.set(index2, obj1);
+            lastOperationOk = true;
+            updateView();
+        } else {
+            lastOperationOk = false;
+        }
+    }
+
+    private Object findObject(String[] desc) {
+        try {
+            String type = desc[0].toLowerCase();
+            int id = Integer.parseInt(desc[1]);
+            
+            if (type.equals("cup")) {
+                return cups.get(id);
+            } else if (type.equals("lid")) {
+                return lids.get(id);
+            }
+        } catch (Exception e) {}
+        return null;
     }
 
     public int height() {
@@ -192,58 +261,18 @@ public class Tower {
     }
 
     // --- VISIBILIDAD Y SISTEMA ---
+    
     private void updateView() {
         if (!isVisible) return;
 
         Canvas can = Canvas.getCanvas();
         int centerX = can.getWidth() / 2;
-        final int FLOOR = Canvas.getCanvas().getHeight() * 3 / 4;
+        final int FLOOR = can.getHeight() * 3 / 4;
         int floorY = FLOOR;
 
-        // cupTopY:      borde superior visual más alto hasta ahora (para apilado)
-        // currentBaseY: fondo interno de la última taza contenedora (para encaje)
-        // lastCupId:    id de la última taza colocada
-        // blockedIds:   conjunto de ids de tazas cuya tapa ya aparece en el stack;
-        //               si la taza contenedora (o cualquier taza que la contiene) está
-        //               bloqueada, el encaje no es posible.
-        // cupTopYById:  yPos del borde superior de cada taza, para que tapas sepan dónde posicionarse
-        // stackTopY:    borde superior de la columna actual (lo que va ENCIMA se apoya aquí)
-        //               se actualiza tanto con tazas apiladas como con tapas sobre la última taza
-        // currentBaseY: fondo INTERIOR de la última taza contenedora (para encaje)
-        // nestingChain: ids de las tazas contenedoras activas en la cadena de encaje actual
-        // blockedCupIds: ids de tazas que ya tienen tapa → bloquean encaje a través de ellas
-        // Construir orden de renderizado: igual que stackedElements pero garantizando
-        // que cada tapa aparezca DESPUÉS de su taza, sin importar si está invertido.
-        // Esto preserva el orden relativo entre tazas y entre tapas.
-        ArrayList<Object> renderOrder = new ArrayList<>();
-        ArrayList<Object> pendingLids = new ArrayList<>();
-        // Primero recorremos en orden buscando tazas; las tapas que aparezcan
-        // antes de su taza las diferimos al final.
-        HashSet<Integer> cupsAdded = new HashSet<>();
-        for (Object obj : stackedElements) {
-            if (obj instanceof Cup) {
-                // Antes de añadir esta taza, vaciar tapas pendientes que ya tienen su taza
-                ArrayList<Object> stillPending = new ArrayList<>();
-                for (Object lid : pendingLids) {
-                    int lidId = ((Lid) lid).getId();
-                    if (cupsAdded.contains(lidId)) { renderOrder.add(lid); }
-                    else { stillPending.add(lid); }
-                }
-                pendingLids = stillPending;
-                renderOrder.add(obj);
-                cupsAdded.add(((Cup) obj).getId());
-            } else if (obj instanceof Lid) {
-                int lidId = ((Lid) obj).getId();
-                if (cupsAdded.contains(lidId)) { renderOrder.add(obj); }
-                else { pendingLids.add(obj); }
-            }
-        }
-        // Tapas que quedaron pendientes (su taza nunca apareció) van al final
-        renderOrder.addAll(pendingLids);
-
+        // Estructuras para guardar coordenadas antes de dibujar
+        HashMap<Object, Point> positions = new HashMap<>();
         HashMap<Integer, Integer> cupTopYById = new HashMap<>();
-        ArrayList<Integer> nestingChain = new ArrayList<>();
-        HashSet<Integer> blockedCupIds = new HashSet<>();
 
         int columnTopY   = floorY;
         int stackTopY    = floorY;
@@ -251,7 +280,11 @@ public class Tower {
         int lastCupId    = Integer.MAX_VALUE;
         int columnCupId  = Integer.MAX_VALUE;
 
-        for (Object obj : renderOrder) {
+        ArrayList<Integer> nestingChain = new ArrayList<>();
+        HashSet<Integer> blockedCupIds = new HashSet<>();
+
+        // PASO 1: Calcular posiciones lógicas (idéntico a la física de simulateHeight)
+        for (Object obj : stackedElements) {
             if (obj instanceof Cup) {
                 Cup c = (Cup) obj;
                 int currentId   = c.getId();
@@ -272,16 +305,15 @@ public class Tower {
                     yPos = currentBaseY - cupHeightPx;
                     nestingChain.add(lastCupId);
                 } else {
-                    yPos = stackTopY - cupHeightPx;
+                    yPos = columnTopY - cupHeightPx;
                     nestingChain.clear();
                     columnCupId = currentId;
                     columnTopY  = yPos;
                 }
 
-                c.setPosition(xPos, yPos);
-                c.makeVisible();
-
+                positions.put(c, new Point(xPos, yPos));
                 cupTopYById.put(currentId, yPos);
+                
                 stackTopY    = Math.min(stackTopY, yPos);
                 currentBaseY = yPos + cupHeightPx - 10;
                 lastCupId    = currentId;
@@ -289,30 +321,43 @@ public class Tower {
             } else if (obj instanceof Lid) {
                 Lid l = (Lid) obj;
                 int lidId = l.getId();
-                int xPos  = centerX - (lidId * 10 / 2);
-
+                int xPos  = centerX - (lidId * 10 / 2) - 7;
                 int yPosLid = cupTopYById.containsKey(lidId) ? cupTopYById.get(lidId) : stackTopY;
 
-                l.setPosition(xPos, yPosLid);
-                l.makeVisible();
-
+                positions.put(l, new Point(xPos, yPosLid));
                 blockedCupIds.add(lidId);
+                
                 if (yPosLid < stackTopY) stackTopY = yPosLid;
                 if (lidId == columnCupId && yPosLid < columnTopY) columnTopY = yPosLid;
+            }
+        }
+
+        // PASO 2: Dibujar primero las tazas y luego las tapas para garantizar el orden visual
+        for (Object obj : stackedElements) {
+            if (obj instanceof Cup) {
+                Cup c = (Cup) obj;
+                Point p = positions.get(c);
+                c.setPosition(p.x, p.y);
+                c.makeVisible();
+            }
+        }
+        for (Object obj : stackedElements) {
+            if (obj instanceof Lid) {
+                Lid l = (Lid) obj;
+                Point p = positions.get(l);
+                l.setPosition(p.x, p.y);
+                l.makeVisible();
             }
         }
     }
 
     public void makeVisible() { Canvas.getCanvas().setVisible(true); isVisible = true; drawRuler(); updateView(); }
-    public void makeInvisible() { isVisible = false; } // Implementar borrado si es necesario
+    public void makeInvisible() { isVisible = false; }
     public void exit() { System.exit(0); }
     public boolean ok() { return lastOperationOk; }
 
     private void drawRuler() {
-        // 1. Limpiar marcas viejas
-        for (Rectangle r : rulerMarks) {
-            r.makeInvisible();
-        }
+        for (Rectangle r : rulerMarks) { r.makeInvisible(); }
         rulerMarks.clear();
     
         if (!isVisible) return;
@@ -321,19 +366,13 @@ public class Tower {
         int floorY = can.getHeight() * 3 / 4;
         int rulerX = 30;
     
-        // 2. Dibujar marcas según la altura máxima
         for (int i = 0; i <= maxHeight; i++) {
             Rectangle mark = new Rectangle();
-            
-            // Marca principal cada 5 unidades o más larga la de 10
             int markWidth = (i % 5 == 0) ? 15 : 8;
             mark.changeSize(1, markWidth); 
             mark.changeColor("black");
             
-            // Calculamos la posición Y respecto al suelo actual
             int yPos = floorY - (i * 10);
-            
-            // Reset de posición inicial de Rectangle (70, 15) para evitar desfases
             mark.moveHorizontal(rulerX - 70);
             mark.moveVertical(yPos - 15);
             
