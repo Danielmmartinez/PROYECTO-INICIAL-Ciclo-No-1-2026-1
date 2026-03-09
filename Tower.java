@@ -2,118 +2,82 @@ import java.util.*;
 import javax.swing.JOptionPane;
 
 /**
- * Gestiona la simulación de una torre de tazas apilables.
- * @version 3.1 (Diseño Limpio)
+ * Gestiona la simulacion de una torre de tazas y tapas apilables.
+ * Refactorizada para centralizar la logica de fisica, gestion de colecciones y manejo de errores.
  */
 public class Tower {
 
-    private int width;
-    private int maxHeight;
+    private final Canvas simulationCanvas; 
+    private final int width;
+    private final int maxHeight;
     private boolean isVisible;
     private boolean lastOperationOk;
-    private HashMap<Integer, Cup> cups;
-    private HashMap<Integer, Lid> lids;
-    private ArrayList<Object> stackedElements;
-    private ArrayList<Rectangle> rulerMarks;
+
+    // Colecciones para gestion de datos y renderizado
+    private final Map<Integer, Cup> cups = new HashMap<>();
+    private final Map<Integer, Lid> lids = new HashMap<>();
+    private List<Object> stackedElements = new ArrayList<>();
+    private final List<Shape> rulerMarks = new ArrayList<>();
 
     public Tower(int width, int maxHeight) {
+        this.simulationCanvas = Canvas.getCanvas(); 
         this.width = width;
         this.maxHeight = maxHeight;
-        this.cups = new HashMap<>();
-        this.lids = new HashMap<>();
-        this.stackedElements = new ArrayList<>();
-        this.rulerMarks = new ArrayList<>();
         this.lastOperationOk = true;
     }
 
-    public Tower(int cups) {
+    public Tower(int numCups) {
         this(100, 1000);
-        for (int i = 1; i <= cups; i++) {
+        for (int i = 1; i <= numCups; i++) {
             pushCup((2 * i) - 1);
         }
     }
 
-    /** Verifica si añadir un elemento nuevo excedería la altura máxima. */
-    private boolean checkHeight(Object potential) {
-        ArrayList<Object> temp = new ArrayList<>(stackedElements);
-        temp.add(potential);
-        if (simulateHeight(temp) > maxHeight) {
-            lastOperationOk = false;
-            reportError("Excede la altura máxima permitida.");
-            return false;
-        }
-        return true;
-    }
-
-    // --- MÉTODOS DE TAZAS ---
-
-    public void pushCup(int i) {
-        if (cups.containsKey(i)) {
-            lastOperationOk = false;
-            reportError("La taza ya existe.");
+    public void pushCup(int id) {
+        if (cups.containsKey(id)) {
+            reportError("La taza " + id + " ya existe.");
             return;
         }
-        Cup c = new Cup(i);
-        if (checkHeight(c)) {
-            cups.put(i, c);
-            stackedElements.add(c);
+        processAddition(new Cup(id), id, cups);
+    }
+
+    public void pushLid(int id) {
+        if (lids.containsKey(id)) {
+            lastOperationOk = false;
+            return;
+        }
+        Lid lid = new Lid(id);
+        if (cups.containsKey(id)) {
+            lid.setColor(cups.get(id).getColor());
+        }
+        processAddition(lid, id, lids);
+    }
+    
+    private <T> void processAddition(T element, int id, Map<Integer, T> storage) {
+        if (checkHeight(element)) {
+            storage.put(id, element);
+            stackedElements.add(element);
             lastOperationOk = true;
             updateView();
+        } else {
+            lastOperationOk = false;
         }
     }
 
     public void popCup() {
-        lastOperationOk = false;
-        for (int j = stackedElements.size() - 1; j >= 0; j--) {
-            if (stackedElements.get(j) instanceof Cup) {
-                Cup c = (Cup) stackedElements.remove(j);
-                cups.remove(c.getId());
-                c.makeInvisible();
-                lastOperationOk = true;
-                updateView();
-                break;
-            }
-        }
-    }
-
-    public void removeCup(int i) {
-        if (cups.containsKey(i)) {
-            Cup c = cups.remove(i);
-            c.makeInvisible();
-            stackedElements.remove(c);
-            lastOperationOk = true;
-            updateView();
-        } else {
-            lastOperationOk = false;
-        }
-    }
-
-    // --- MÉTODOS DE TAPAS ---
-
-    public void pushLid(int i) {
-        if (lids.containsKey(i)) {
-            lastOperationOk = false;
-            return;
-        }
-        Lid l = new Lid(i);
-        if (cups.containsKey(i)) {
-            l.setColor(cups.get(i).getColor());
-        }
-        if (checkHeight(l)) {
-            lids.put(i, l);
-            stackedElements.add(l);
-            lastOperationOk = true;
-            updateView();
-        }
+        removeLastInstanceOf(Cup.class);
     }
 
     public void popLid() {
+        removeLastInstanceOf(Lid.class);
+    }
+
+    private void removeLastInstanceOf(Class<?> clazz) {
         lastOperationOk = false;
-        for (int j = stackedElements.size() - 1; j >= 0; j--) {
-            if (stackedElements.get(j) instanceof Lid) {
-                Lid l = (Lid) stackedElements.remove(j);
-                lids.remove(l.getId());
-                l.makeInvisible();
+        for (int i = stackedElements.size() - 1; i >= 0; i--) {
+            Object obj = stackedElements.get(i);
+            if (clazz.isInstance(obj)) {
+                removeFromCollections(obj);
                 lastOperationOk = true;
                 updateView();
                 break;
@@ -121,11 +85,18 @@ public class Tower {
         }
     }
 
-    public void removeLid(int i) {
-        if (lids.containsKey(i)) {
-            Lid l = lids.remove(i);
-            l.makeInvisible();
-            stackedElements.remove(l);
+    public void removeCup(int id) {
+        removeSpecificItem(id, cups);
+    }
+
+    public void removeLid(int id) {
+        removeSpecificItem(id, lids);
+    }
+
+    private void removeSpecificItem(int id, Map<Integer, ?> storage) {
+        Object item = storage.get(id);
+        if (item != null) {
+            removeFromCollections(item);
             lastOperationOk = true;
             updateView();
         } else {
@@ -133,188 +104,172 @@ public class Tower {
         }
     }
 
-    // --- LÓGICA DE TORRE ---
+    private void removeFromCollections(Object obj) {
+        stackedElements.remove(obj);
+        if (obj instanceof Cup) {
+            Cup c = (Cup) obj;
+            cups.remove(c.getId());
+            c.makeInvisible();
+        } else if (obj instanceof Lid) {
+            Lid l = (Lid) obj;
+            lids.remove(l.getId());
+            l.makeInvisible();
+        }
+    }
 
     public void orderTower() {
         List<Integer> ids = new ArrayList<>(cups.keySet());
-        Collections.sort(ids, Collections.reverseOrder());
-        stackedElements.clear();
-
-        for (int id : ids) {
-            stackedElements.add(cups.get(id));
-        }
+        ids.sort(Collections.reverseOrder());
+        
+        List<Object> newOrder = new ArrayList<>();
+        for (int id : ids) newOrder.add(cups.get(id));
 
         Collections.sort(ids);
         for (int id : ids) {
-            if (lids.containsKey(id)) {
-                stackedElements.add(lids.get(id));
-            }
+            if (lids.containsKey(id)) newOrder.add(lids.get(id));
         }
-        updateView();
+
+        stackedElements = newOrder;
         lastOperationOk = true;
+        updateView();
     }
 
     public void reverseTower() {
         Collections.reverse(stackedElements);
-        updateView();
         lastOperationOk = true;
-    }
-
-    public void swap(String[] o1, String[] o2) {
-        if (o1 == null || o2 == null || o1.length < 2 || o2.length < 2) {
-            lastOperationOk = false;
-            return;
-        }
-        Object obj1 = findObject(o1);
-        Object obj2 = findObject(o2);
-
-        if (obj1 == null || obj2 == null) {
-            lastOperationOk = false;
-            return;
-        }
-
-        int index1 = stackedElements.indexOf(obj1);
-        int index2 = stackedElements.indexOf(obj2);
-
-        if (index1 != -1 && index2 != -1) {
-            stackedElements.set(index1, obj2);
-            stackedElements.set(index2, obj1);
-            lastOperationOk = true;
-            updateView();
-        } else {
-            lastOperationOk = false;
-        }
+        updateView();
     }
 
     public void cover() {
-        ArrayList<Lid> presentLids = new ArrayList<>();
-        for (Object obj : stackedElements) {
-            if (obj instanceof Lid) {
-                presentLids.add((Lid) obj);
+        for (Cup cup : cups.values()) {
+            if (!lids.containsKey(cup.getId())) {
+                Lid newLid = new Lid(cup.getId());
+                newLid.setColor(cup.getColor());
+                lids.put(cup.getId(), newLid);
             }
         }
 
-        ArrayList<Object> newStack = new ArrayList<>();
+        List<Object> newStack = new ArrayList<>();
+        Set<Lid> usedLids = new HashSet<>();
+
         for (Object obj : stackedElements) {
+            newStack.add(obj);
             if (obj instanceof Cup) {
-                newStack.add(obj);
                 int id = ((Cup) obj).getId();
-                Lid match = null;
-                for (Lid l : presentLids) {
-                    if (l.getId() == id) {
-                        match = l;
-                        break;
-                    }
-                }
+                Lid match = lids.get(id);
                 if (match != null) {
                     newStack.add(match);
-                    presentLids.remove(match);
+                    usedLids.add(match);
                 }
-            } else if (!(obj instanceof Lid)) {
-                newStack.add(obj);
             }
         }
-        newStack.addAll(presentLids); // Tapas sin taza al tope
+        
+        for (Lid l : lids.values()) {
+            if (!usedLids.contains(l) && !newStack.contains(l)) {
+                newStack.add(l);
+            }
+        }
 
         stackedElements = newStack;
         lastOperationOk = true;
         updateView();
     }
 
-    public String[][] swapToReduce() {
-        int currentHeight = height();
-        int n = stackedElements.size();
+    public void swap(String[] desc1, String[] desc2) {
+        Object obj1 = findObject(desc1);
+        Object obj2 = findObject(desc2);
 
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = i + 1; j < n; j++) {
-                ArrayList<Object> tempStack = new ArrayList<>(stackedElements);
-                Object obj1 = tempStack.get(i);
-                Object obj2 = tempStack.get(j);
-                tempStack.set(i, obj2);
-                tempStack.set(j, obj1);
-
-                if (simulateHeight(tempStack) < currentHeight) {
-                    String[][] result = new String[2][2];
-                    result[0][0] = (obj1 instanceof Cup) ? "cup" : "lid";
-                    result[0][1] = String.valueOf((obj1 instanceof Cup) ? ((Cup) obj1).getId() : ((Lid) obj1).getId());
-                    result[1][0] = (obj2 instanceof Cup) ? "cup" : "lid";
-                    result[1][1] = String.valueOf((obj2 instanceof Cup) ? ((Cup) obj2).getId() : ((Lid) obj2).getId());
-                    lastOperationOk = true;
-                    return result;
-                }
-            }
+        if (obj1 != null && obj2 != null) {
+            int idx1 = stackedElements.indexOf(obj1);
+            int idx2 = stackedElements.indexOf(obj2);
+            Collections.swap(stackedElements, idx1, idx2);
+            lastOperationOk = true;
+            updateView();
+        } else {
+            lastOperationOk = false;
         }
-        lastOperationOk = true;
-        return new String[0][0];
     }
-
-    private Object findObject(String[] desc) {
-        try {
-            String type = desc[0].toLowerCase();
-            int id = Integer.parseInt(desc[1]);
-            if (type.equals("cup")) return cups.get(id);
-            else if (type.equals("lid")) return lids.get(id);
-        } catch (Exception e) {
-            // Error en parsing o ID inexistente
-        }
-        return null;
-    }
-
-    // --- MOTOR DE FÍSICAS ---
 
     public int height() {
         return calculatePhysics(stackedElements, false);
     }
 
-    private int simulateHeight(ArrayList<Object> elements) {
-        return calculatePhysics(elements, false);
+    private boolean checkHeight(Object potential) {
+        List<Object> temp = new ArrayList<>(stackedElements);
+        temp.add(potential);
+        if (calculatePhysics(temp, false) > maxHeight) {
+            reportError("Excede la altura máxima permitida.");
+            return false;
+        }
+        return true;
     }
 
-    private int calculatePhysics(ArrayList<Object> elements, boolean applyToView) {
-        Canvas can = Canvas.getCanvas();
-        final int FLOOR = can.getHeight() * 3 / 4;
-        int centerX = can.getWidth() / 2;
+    private int calculatePhysics(List<Object> elements, boolean applyToView) {
+        final int FLOOR = simulationCanvas.getHeight() * 3 / 4;
+        final int CENTER_X = simulationCanvas.getWidth() / 2;
         int highestY = FLOOR;
 
-        HashMap<Object, Integer> topYMap = new HashMap<>();
-        HashMap<Object, Integer> baseYMap = new HashMap<>();
-        ArrayList<Object> placed = new ArrayList<>();
+        Map<Object, Integer> topYMap = new HashMap<>();
+        Map<Object, Integer> baseYMap = new HashMap<>();
+        List<Object> placed = new ArrayList<>();
 
         for (Object obj : elements) {
             int w, h;
             boolean isCup = obj instanceof Cup;
 
             if (isCup) {
-                w = ((Cup) obj).getId() * 10;
-                h = ((Cup) obj).getHeight() * 10;
+                Cup c = (Cup) obj;
+                w = c.getId() * 10;
+                h = c.getHeight() * 10;
             } else {
-                w = ((Lid) obj).getId() * 10 + 14;
-                h = 12;
+                Lid l = (Lid) obj;
+                boolean isCovering = false;
+                if (!placed.isEmpty()) {
+                    Object topItem = placed.get(placed.size() - 1);
+                    isCovering = (topItem instanceof Cup && ((Cup) topItem).getId() == l.getId());
+                }
+                
+                if (applyToView) l.setCovering(isCovering);
+                w = isCovering ? (l.getId() * 10) + 14 : (l.getId() * 10) + 4;
+                h = isCovering ? 12 : 6;
             }
 
+            // --- LÓGICA DE COLISIÓN ESTRICTAMENTE FÍSICA ---
             int dropY = FLOOR;
             for (Object p : placed) {
-                int pTopY = topYMap.get(p);
+                int obstacleY;
+                
                 if (p instanceof Cup) {
-                    int pW = ((Cup) p).getId() * 10;
-                    // Si cabe adentro, cae hasta la base interna, si no choca con el borde superior
-                    dropY = Math.min(dropY, (w < pW) ? baseYMap.get(p) : pTopY);
+                    Cup pCup = (Cup) p;
+                    // Calculamos el hueco real que queda entre las dos paredes de 10px
+                    int pInnerW = (pCup.getId() * 10) - 20; 
+                    
+                    // Si la figura que cae cabe COMPLETAMENTE sin tocar las paredes
+                    if (w <= pInnerW) {
+                        obstacleY = baseYMap.get(p);
+                    } else {
+                        // Si es más ancha que el hueco (ej. la Amarilla sobre la Magenta), choca arriba
+                        obstacleY = topYMap.get(p);
+                    }
                 } else {
-                    dropY = Math.min(dropY, pTopY);
+                    // Las tapas siempre son un techo sólido
+                    obstacleY = topYMap.get(p); 
+                }
+                
+                if (obstacleY < dropY) {
+                    dropY = obstacleY;
                 }
             }
 
             int finalY = dropY - h;
-            int baseY = isCup ? finalY + h - 10 : finalY;
-
             placed.add(obj);
             topYMap.put(obj, finalY);
-            if (isCup) baseYMap.put(obj, baseY);
+            if (isCup) baseYMap.put(obj, finalY + h - 10);
 
             highestY = Math.min(highestY, finalY);
 
             if (applyToView && isVisible) {
-                int xPos = centerX - (w / 2);
+                int xPos = CENTER_X - (w / 2);
                 if (isCup) ((Cup) obj).setPosition(xPos, finalY);
                 else ((Lid) obj).setPosition(xPos, finalY);
             }
@@ -324,20 +279,29 @@ public class Tower {
 
     private void updateView() {
         if (!isVisible) return;
-
+        
+        for (Lid l : lids.values()) {
+            if (cups.containsKey(l.getId())) {
+                l.setColor(cups.get(l.getId()).getColor());
+            }
+        }
+        
         calculatePhysics(stackedElements, true);
+        
+        stackedElements.forEach(o -> { if(o instanceof Cup) ((Cup)o).makeInvisible(); else ((Lid)o).makeInvisible(); });
+        stackedElements.forEach(o -> { if(o instanceof Cup) ((Cup)o).makeVisible(); });
+        stackedElements.forEach(o -> { if(o instanceof Lid) ((Lid)o).makeVisible(); });
+    }
 
-        // Render visual: primero tazas y luego tapas para que queden encima
-        for (Object obj : stackedElements) {
-            if (obj instanceof Cup) ((Cup) obj).makeVisible();
-        }
-        for (Object obj : stackedElements) {
-            if (obj instanceof Lid) ((Lid) obj).makeVisible();
-        }
+    private Object findObject(String[] desc) {
+        try {
+            int id = Integer.parseInt(desc[1]);
+            return desc[0].equalsIgnoreCase("cup") ? cups.get(id) : lids.get(id);
+        } catch (Exception e) { return null; }
     }
 
     public int[] lidedCups() {
-        ArrayList<Integer> res = new ArrayList<>();
+        List<Integer> res = new ArrayList<>();
         for (Integer id : cups.keySet()) {
             if (lids.containsKey(id)) res.add(id);
         }
@@ -355,45 +319,72 @@ public class Tower {
         return items;
     }
 
+    public String[][] swapToReduce() {
+        int currentHeight = height();
+        int n = stackedElements.size();
+
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
+                List<Object> tempStack = new ArrayList<>(stackedElements);
+                Object obj1 = tempStack.get(i);
+                Object obj2 = tempStack.get(j);
+                tempStack.set(i, obj2);
+                tempStack.set(j, obj1);
+
+                // Usamos nuestro motor físico ICPC para ver si el cambio reduce la altura
+                if (calculatePhysics(tempStack, false) < currentHeight) {
+                    String[][] result = new String[2][2];
+                    result[0][0] = (obj1 instanceof Cup) ? "cup" : "lid";
+                    result[0][1] = String.valueOf((obj1 instanceof Cup) ? ((Cup) obj1).getId() : ((Lid) obj1).getId());
+                    result[1][0] = (obj2 instanceof Cup) ? "cup" : "lid";
+                    result[1][1] = String.valueOf((obj2 instanceof Cup) ? ((Cup) obj2).getId() : ((Lid) obj2).getId());
+                    lastOperationOk = true;
+                    return result;
+                }
+            }
+        }
+        lastOperationOk = true;
+        return new String[0][0]; // Si no hay reducción, devuelve matriz vacía
+    }
+    
     public void makeVisible() {
-        Canvas.getCanvas().setVisible(true);
+        simulationCanvas.setVisible(true); 
         isVisible = true;
         drawRuler();
         updateView();
     }
 
     public void makeInvisible() {
-        isVisible = false;
-    }
-
-    public void exit() {
-        System.exit(0);
-    }
-
-    public boolean ok() {
-        return lastOperationOk;
+        isVisible = false; 
     }
 
     private void drawRuler() {
-        for (Rectangle r : rulerMarks) r.makeInvisible();
+        rulerMarks.forEach(Shape::makeInvisible);
         rulerMarks.clear();
         if (!isVisible) return;
 
-        Canvas can = Canvas.getCanvas();
-        int floorY = can.getHeight() * 3 / 4;
-
+        int floorY = simulationCanvas.getHeight() * 3 / 4;
         for (int i = 0; i <= maxHeight; i++) {
-            Rectangle mark = new Rectangle();
+            Shape mark = Shape.createShape();
             mark.changeSize(1, (i % 5 == 0) ? 15 : 8);
             mark.changeColor("black");
-            mark.moveHorizontal(30 - 70);
-            mark.moveVertical((floorY - (i * 10)) - 15);
+            mark.moveHorizontal(-40);
+            mark.moveVertical(floorY - (i * 10) - 15);
             mark.makeVisible();
             rulerMarks.add(mark);
         }
     }
 
     private void reportError(String m) {
+        lastOperationOk = false;
         if (isVisible) JOptionPane.showMessageDialog(null, m);
+    }
+
+    public boolean ok() {
+        return lastOperationOk; 
+    }
+    
+    public void exit() {
+        System.exit(0); 
     }
 }

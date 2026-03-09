@@ -38,16 +38,19 @@ public class TowerC2Test {
 
     @Test
     public void shouldCoverCupsWithMatchingLids() {
-        Tower t = new Tower(2); // Crea tazas 1 y 3
-        t.pushLid(1); // Agregamos la tapa de la taza 1
-        t.cover(); // Reorganizamos para tapar
+        Tower t = new Tower(100, 100);
+        // Metemos 2 tazas
+        t.pushCup(1);
+        t.pushCup(2);
         
+        // Metemos solo 1 tapa manual
+        t.pushLid(1);
+        
+        t.cover();
+        
+        // ESPERAMOS que la torre ahora tenga 2 tazas tapadas (usó la que había y creó la otra)
+        assertEquals(2, t.lidedCups().length);
         assertTrue(t.ok());
-        
-        // Verificamos que detecte que la taza 1 está tapada
-        int[] lided = t.lidedCups();
-        assertEquals(1, lided.length);
-        assertEquals(1, lided[0]);
     }
 
     @Test
@@ -83,13 +86,18 @@ public class TowerC2Test {
 
     @Test
     public void shouldNotFailWhenCoveringWithoutLids() {
-        Tower t = new Tower(3);
+        Tower t = new Tower(100, 100);
+        // Metemos 3 tazas sin tapas
+        t.pushCup(1);
+        t.pushCup(2);
+        t.pushCup(3);
         
-        // Llamamos a cover sin haber agregado ninguna tapa
+        // Llamamos al método mágico
         t.cover();
         
-        // No debería fallar ni arrojar excepciones
+        // Ahora ESPERAMOS que haya 3 tazas tapadas (fabricó las 3 tapas)
+        assertEquals(3, t.lidedCups().length);
         assertTrue(t.ok());
-        assertEquals(0, t.lidedCups().length);
     }
+
 }

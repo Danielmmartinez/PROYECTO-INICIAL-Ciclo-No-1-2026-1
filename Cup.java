@@ -1,37 +1,49 @@
 /**
- * Representa una taza hueca en la simulación, compuesta por una base y dos paredes laterales.
- * La taza escala sus dimensiones basándose en su identificador (id).
+ * Representa una taza hueca en la simulación, compuesta por tres figuras.
  */
 public class Cup {
 
-    private int id;
-    private int height;
-    private String color;
-    private Rectangle base;
-    private Rectangle leftWall;
-    private Rectangle rightWall;
+    private final int id;
+    private final int height;
+    private final String color;
+    
+    // Componentes de la taza 
+    private final Shape base;
+    private final Shape leftWall;
+    private final Shape rightWall;
 
-    // Variables de rastreo para evitar errores de movimiento relativo
-    private int xAct;
-    private int yLeftAct;
-    private int yBaseAct;
-    private int xRightAct;
-    private int yRightAct;
+    // Estado de posicion actual
+    private int xCurrent;
+    private int yCurrent;
 
     /**
-     * Crea una nueva taza con un identificador específico.
-     * @param id El identificador único y tamaño base de la taza.
+     * Constructor que inicializa las partes de la taza basandose en su ID.
+     * @param id El identificador que determina el ancho y la altura.
      */
     public Cup(int id) {
         this.id = id;
         this.height = (2 * id) - 1;
         this.color = pickColor(id);
 
-        base = new Rectangle();
-        leftWall = new Rectangle();
-        rightWall = new Rectangle();
+        // Inicializamos las piezas usando la fabrica de la clase padre
+        this.base = Shape.createShape();
+        this.leftWall = Shape.createShape();
+        this.rightWall = Shape.createShape();
 
-        // 1cm = 10 pixeles. Las paredes conservan su grosor original de 10.
+        // Configuracion inicial de dimensiones 
+        setupDimensions();
+        
+        this.base.moveVertical((height * 10) - 10);
+        this.rightWall.moveHorizontal((id * 10) - 10);
+        
+        this.xCurrent = 70;
+        this.yCurrent = 15;
+    }
+
+    /**
+     * Define el tamaño y color de cada parte de la taza.
+     */
+    private void setupDimensions() {
         base.changeSize(10, id * 10);
         leftWall.changeSize(height * 10, 10);
         rightWall.changeSize(height * 10, 10);
@@ -39,40 +51,26 @@ public class Cup {
         base.changeColor(color);
         leftWall.changeColor(color);
         rightWall.changeColor(color);
-
-        // Estado inicial
-        xAct = 70;
-        xRightAct = 70;
-        yLeftAct = 15;
-        yBaseAct = 15;
-        yRightAct = 15;
-
-        setPosition(70, 15);
     }
 
     /**
-     * Mueve la taza manteniendo unidas sus tres partes.
+     * Mueve todas las partes de la taza a una nueva coordenada de forma coordinada.
      */
     public void setPosition(int newX, int newY) {
-        // Pared Izquierda
-        leftWall.moveHorizontal(newX - xAct);
-        leftWall.moveVertical(newY - yLeftAct);
-        yLeftAct = newY;
+        int dx = newX - xCurrent;
+        int dy = newY - yCurrent;
 
-        // Base
-        int targetYBase = newY + (height * 10) - 10;
-        base.moveHorizontal(newX - xAct);
-        base.moveVertical(targetYBase - yBaseAct);
-        yBaseAct = targetYBase;
+        leftWall.moveHorizontal(dx);
+        leftWall.moveVertical(dy);
 
-        // Pared Derecha
-        int targetXRight = newX + (id * 10) - 10;
-        rightWall.moveHorizontal(targetXRight - xRightAct);
-        rightWall.moveVertical(newY - yRightAct);
-        xRightAct = targetXRight;
-        yRightAct = newY;
+        base.moveHorizontal(dx);
+        base.moveVertical(dy);
+        
+        rightWall.moveHorizontal(dx);
+        rightWall.moveVertical(dy);
 
-        xAct = newX;
+        this.xCurrent = newX;
+        this.yCurrent = newY;
     }
 
     public void makeVisible() {
@@ -88,15 +86,15 @@ public class Cup {
     }
 
     public int getId() {
-        return id;
+        return id; 
     }
-
+    
     public int getHeight() {
-        return height;
+        return height; 
     }
-
+    
     public String getColor() {
-        return color;
+        return color; 
     }
 
     private String pickColor(int i) {
