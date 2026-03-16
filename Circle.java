@@ -1,7 +1,7 @@
 import java.awt.geom.*;
 
 /**
- * Representa un círculo que hereda de Shape.
+ * Representa un circulo que hereda de Shape.
  * Se adapta para que el diámetro sea controlado de forma consistente.
  */
 public class Circle extends Shape {

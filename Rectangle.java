@@ -1,8 +1,8 @@
 import java.awt.*;
 
 /**
- * Representa un rectángulo que hereda de Shape.
- * Es la figura base utilizada por la fábrica de la clase madre.
+ * Representa un rectangulo que hereda de Shape.
+ * Es la figura base utilizada por la fabrica de la clase madre.
  */
 public class Rectangle extends Shape {
     

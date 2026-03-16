@@ -1,8 +1,8 @@
 import java.awt.*;
 
 /**
- * Representa un triángulo isósceles que hereda de Shape.
- * La geometría se calcula dinámicamente basándose en la posición y dimensiones.
+ * Representa un triangulo isosceles que hereda de Shape.
+ * La geometria se calcula dinamicamente basándose en la posicion y dimensiones.
  */
 public class Triangle extends Shape {
     
