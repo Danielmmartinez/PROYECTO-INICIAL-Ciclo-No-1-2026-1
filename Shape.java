@@ -1,3 +1,5 @@
+package shapes;
+
 import java.awt.*;
 
 /**
@@ -41,13 +43,8 @@ public abstract class Shape {
      * @return Una nueva instancia de Shape.
      */
     public static Shape createShape() {
-        try {
-            return (Shape) Class.forName(DEFAULT_SHAPE_CLASS).getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            System.err.println("Error: No se pudo encontrar la clase base visual " + DEFAULT_SHAPE_CLASS);
-            return null;
-        }
-    }
+        return new Rectangle();
+    }    
 
     /**
      * Hace visible la figura en el lienzo.
