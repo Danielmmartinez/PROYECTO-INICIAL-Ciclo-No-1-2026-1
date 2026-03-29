@@ -1,6 +1,8 @@
+package tower;
+import shapes.*;
+
 import java.util.*;
 import javax.swing.JOptionPane;
-//a
 /**
  * Gestiona la simulación física e interacción de una torre de tazas y tapas.
  * Implementa mecánicas de apilamiento estricto y renderizado visual.
@@ -46,23 +48,100 @@ public class Tower {
             pushCup(i);
         }
     }
-
+    
     public void pushCup(int id) {
+        pushCup(id, "normal");
+    }
+    
+    public void pushCup(int id,String type) {
         if (cups.containsKey(id)) {
             reportError("La taza " + id + " ya existe.");
             return;
         }
-        processAddition(new Cup(id), id, cups);
+        
+        try {
+            String className = type.substring(0,1).toUpperCase() + type.substring(1).toLowerCase() + "Cup";
+            Cup newCup = (Cup) Class.forName("tower." + className).getDeclaredConstructor(int.class).newInstance(id);
+            if (newCup instanceof OpenerCup) {
+                List<Lid> lidsToRemove = new ArrayList<>(lids.values());
+                for (Lid lid : lidsToRemove) {
+                    removeFromCollections(lid);
+                }
+                processAddition(newCup, id, cups);
+            } 
+            else if (newCup instanceof HierarchicalCup) {
+                int targetIndex = stackedElements.size();
+                
+                for (int i = stackedElements.size() - 1; i >= 0; i--) {
+                    Object obj = stackedElements.get(i);
+                    int objSize = (obj instanceof Cup) ? ((Cup)obj).getId() : ((Lid)obj).getId();
+                    
+                    if (obj instanceof AnchorCup) {
+                        break;   
+                    } 
+                    
+                    if (objSize < id) {
+                        targetIndex = i; 
+                    } else {
+                        break; 
+                    }
+                }
+        
+                stackedElements.add(targetIndex, newCup);
+                if (calculatePhysics(stackedElements, false) > maxHeight) {
+                    stackedElements.remove(targetIndex); 
+                    reportError("Excede la altura máxima permitida.");
+                    lastOperationOk = false;
+                } else {
+                    cups.put(id, newCup);
+                    lastOperationOk = true;
+                    updateView();
+                }
+            }
+            else {
+                processAddition(newCup,id,cups);
+            }
+            
+        } catch (Exception e) {
+            reportError("Error: No se pudo crear la taza de tipo '" + type + "'.");
+        }
+    }
+    
+    public void pushLid(int id) {
+        pushLid(id, "normal");
     }
 
-    public void pushLid(int id) {
+    public void pushLid(int id, String type) {
         if (lids.containsKey(id)) {
             lastOperationOk = false;
             return;
         }
-        Lid lid = new Lid(id);
-        if (cups.containsKey(id)) lid.setColor(cups.get(id).getColor());
-        processAddition(lid, id, lids);
+        try {
+            String className = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase() + "Lid";
+            Lid newLid = (Lid) Class.forName("tower." + className).getDeclaredConstructor(int.class).newInstance(id);
+            if (newLid instanceof FearfulLid) {
+                if (!cups.containsKey(id)) {
+                    reportError("La tapa miedosa " + id + " no entra porque su taza compañera no esta.");
+                    lastOperationOk = false;
+                    return; 
+                }
+            }
+            if (cups.containsKey(id)) {
+                newLid.setColor(cups.get(id).getColor());
+            }
+            if (newLid instanceof CrazyLid) {
+                if (checkHeight(newLid)) {
+                    lids.put(id, newLid);
+                    stackedElements.add(0, newLid); 
+                    lastOperationOk = true;
+                    updateView();
+                }
+            } else {
+              processAddition(newLid, id, lids);  
+            }
+        } catch (Exception e) {
+            lastOperationOk = false;
+        }
     }
     
     private <T> void processAddition(T element, int id, Map<Integer, T> storage) {
@@ -89,6 +168,19 @@ public class Tower {
         for (int i = stackedElements.size() - 1; i >= 0; i--) {
             Object obj = stackedElements.get(i);
             if (clazz.isInstance(obj)) {
+                if (obj instanceof FearfulLid && cups.containsKey(((FearfulLid)obj).getId())) {
+                    reportError("La tapa miedosa no quiere salir, protege a su taza.");
+                    lastOperationOk = false; return;
+                }
+                if (obj instanceof HierarchicalCup && stackedElements.indexOf(obj) == 0) {
+                    reportError("La taza jerarquica esta en el fondo y no se deja quitar.");
+                    lastOperationOk = false; return;
+                }
+                if (obj instanceof AnchorCup) {
+                    reportError("¡La taza Ancla es demasiado pesada para quitarla!");
+                    lastOperationOk = false; 
+                    return;
+                }
                 removeFromCollections(obj);
                 lastOperationOk = true;
                 updateView();
@@ -108,6 +200,18 @@ public class Tower {
     private void removeSpecificItem(int id, Map<Integer, ?> storage) {
         Object item = storage.get(id);
         if (item != null) {
+            if (item instanceof FearfulLid && cups.containsKey(id)) {
+                reportError("La tapa miedosa no quiere salir, protege a su taza.");
+                lastOperationOk = false; return;
+            }
+            if (item instanceof HierarchicalCup && stackedElements.indexOf(item) == 0) {
+                reportError("La taza jerárquica está en el fondo y no se deja quitar.");
+                lastOperationOk = false; return;
+            }
+            if (item instanceof AnchorCup) {
+                reportError("¡La taza Ancla es inamovible!");
+                lastOperationOk = false; return;
+            }
             removeFromCollections(item);
             lastOperationOk = true;
             updateView();
@@ -155,7 +259,7 @@ public class Tower {
     public void cover() {
         for (Cup cup : cups.values()) {
             if (!lids.containsKey(cup.getId())) {
-                Lid newLid = new Lid(cup.getId());
+                Lid newLid = Lid.createDefault(cup.getId());
                 newLid.setColor(cup.getColor());
                 lids.put(cup.getId(), newLid);
             }

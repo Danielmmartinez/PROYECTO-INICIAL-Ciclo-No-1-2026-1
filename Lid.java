@@ -1,3 +1,5 @@
+package tower;
+import shapes.*;
 /**
  * Representa la tapa de una taza con un indicador visual (perilla) 
  * cuando esta cubriendo.
@@ -5,34 +7,36 @@
  * @author
  * version
  */
-public class Lid {
+public abstract class Lid {
     
     // --- Constantes ---
-    private static final int INITIAL_X = 70;
-    private static final int INITIAL_Y = 15;
-    private static final int LID_HEIGHT = 6;
-    private static final int WIDTH_MULTIPLIER = 20;
-    private static final int KNOB_WIDTH = 10;
-    private static final int KNOB_HEIGHT = 6;
-    private static final String DEFAULT_COLOR = "black";
+    protected static final int INITIAL_X = 70;
+    protected static final int INITIAL_Y = 15;
+    protected static final int LID_HEIGHT = 6;
+    protected static final int WIDTH_MULTIPLIER = 20;
+    protected static final int KNOB_WIDTH = 10;
+    protected static final int KNOB_HEIGHT = 6;
+    protected static final String DEFAULT_COLOR = "black";
     
     // --- Atributos de estado e identidad ---
-    private final int id;
-    private int xCurrent;
-    private int yCurrent;
-    private boolean isVisible;
-    private boolean isCoveringState;
+    protected final int id;
+    protected final String type;
+    protected int xCurrent;
+    protected int yCurrent;
+    protected boolean isVisible;
+    protected boolean isCoveringState;
     
     // --- Atributos visuales ---
-    private final Shape visual;
-    private final Shape knob;
+    protected final Shape visual;
+    protected final Shape knob;
     
     /**
      * Constructor que crea una nueva tapa con su perilla centrada.
      * @param id Identificador de la tapa.
      */
-    public Lid(int id) {
+    public Lid(int id, String type) {
         this.id = id;
+        this.type = type;
         this.visual = Shape.createShape();
         this.knob = Shape.createShape(); 
         
@@ -53,7 +57,14 @@ public class Lid {
 
         setCovering(false); 
     }
-
+    
+    /**
+     * Make a default Cup
+     */
+    public static Lid createDefault(int id) {
+        return new NormalLid(id);
+    }
+    
     /**
      * Define si la tapa esta actualmente cubriendo su taza correspondiente.
      * Este estado determina si la perilla se muestra o se oculta.
@@ -90,6 +101,7 @@ public class Lid {
     public void setColor(String color) { 
         visual.changeColor(color); 
         knob.changeColor(color);
+        applyVisualDistinction();
     }
     
     /**
@@ -114,7 +126,7 @@ public class Lid {
      * Metodo auxiliar privado para gestionar la visibilidad de la perilla
      * basado en el estado general de visibilidad y el estado de cobertura.
      */
-    private void updateKnobVisibility() {
+    protected void updateKnobVisibility() {
         if (isVisible && isCoveringState) {
             knob.makeVisible();
         } else {
@@ -129,4 +141,17 @@ public class Lid {
     public int getId() { 
         return id; 
     }
+    
+    /**
+     *  @return El tipo de la tapa.
+     */
+    public String gettype() { 
+        return type; 
+    }
+    
+    /**
+     * Permite a las subclases aplicar detalles .
+     */
+    protected abstract void applyVisualDistinction();
 }
+

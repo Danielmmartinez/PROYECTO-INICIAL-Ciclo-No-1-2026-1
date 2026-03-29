@@ -1,3 +1,6 @@
+package tower;
+import shapes.*;
+
 /**
  * Representa una taza hueca con geometria perfecta para anidamiento.
  * Gestiona su propia representacion visual mediante tres rectangulos.
@@ -5,40 +8,42 @@
  * @author
  * version
  */
-public class Cup {
+public abstract class Cup {
     //------Constantes------------
     
-    private static final int WALL_THICKNESS = 10;
-    private static final int WIDTH_MULTIPLIER = 20;
-    private static final int INITIAL_X = 70;
-    private static final int INITIAL_Y = 15;
+    protected static final int WALL_THICKNESS = 10;
+    protected static final int WIDTH_MULTIPLIER = 20;
+    protected static final int INITIAL_X = 70;
+    protected static final int INITIAL_Y = 15;
     
     //-----Colores----------------
     
-    private static final String[] COLORS = {
+    protected static final String[] COLORS = {
         "red", "blue", "green", "yellow", "magenta", "black"
     };
     
     // --- Atributos de estado ---
-        private final int id;
-        private final int height;
-        private final String color;
+        protected final int id;
+        protected final int height;
+        protected String color;
+        protected final String type;
         
         // --- Atributos visuales ---
-        private final Shape base;
-        private final Shape leftWall;
-        private final Shape rightWall;
+        protected final Shape base;
+        protected final Shape leftWall;
+        protected final Shape rightWall;
     
-        private int xCurrent;
-        private int yCurrent;
+        protected int xCurrent;
+        protected int yCurrent;
     /**
      * Constructor que crea una nueva taza con un identificador unico.
      * Su altura y anchura se calculan matematicamente en funcion del ID.
      *
      * @param id Identificador de la taza (determina su tamaño).
      */
-    public Cup(int id) {
+    public Cup(int id, String type) {
         this.id = id;
+        this.type = type;
         this.height = (2 * id) - 1;
         this.color = pickColor(id);
 
@@ -60,7 +65,7 @@ public class Cup {
      * Configura el tamaño y color inicial de las figuras geometricas
      * que componen la taza basándose en el grosor de pared y multiplicadores.
      */
-    private void setupDimensions() {
+    protected void setupDimensions() {
         int currentWidth = id * WIDTH_MULTIPLIER;
         int currentHeightPx = height * WALL_THICKNESS;
 
@@ -134,13 +139,25 @@ public class Cup {
     public String getColor() {
         return color; 
     }
+    
+    /**
+     * @return el tipo de la taza
+     */
+    public String getType() {
+        return type;
+    }
 
     /**
      * Selecciona un color de la paleta basándose en el ID.
      * @param i El identificador usado como índice.
      * @return El nombre del color en inglés válido para el Canvas.
      */
-    private String pickColor(int i) {
+    protected String pickColor(int i) {
         return COLORS[i % COLORS.length];
     }
+    
+    /**
+     * Metodo que permite que las subclases apliquen detalles unicos.
+     */
+    protected abstract void applyVisualDistinction();
 }
