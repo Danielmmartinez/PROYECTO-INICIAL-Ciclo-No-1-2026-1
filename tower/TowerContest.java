@@ -12,11 +12,10 @@ public class TowerContest {
 
     private static Tower lastSimulatedTower;
 
-    // PMD: Constructor privado
     private TowerContest() { }
 
     public static String solve(int n, int h) {
-        if (n > MAX_BRUTE_FORCE_CUPS) { // PMD: Llaves agregadas
+        if (n > MAX_BRUTE_FORCE_CUPS) { 
             return "impossible_too_large";
         }
 
@@ -43,7 +42,7 @@ public class TowerContest {
             if (!used[i]) {
                 used[i] = true;
                 perm[depth] = i;
-                if (solveDFS(n, targetH, depth + 1, perm, used, result)) { // PMD: Llaves agregadas
+                if (solveDFS(n, targetH, depth + 1, perm, used, result)) { 
                     return true;
                 }
                 used[i] = false;
@@ -75,7 +74,7 @@ public class TowerContest {
             baseY[i] = dropY;
             topY[i] = dropY + currentHeight;
 
-            if (topY[i] > maxHeight) { // PMD: Llaves agregadas
+            if (topY[i] > maxHeight) { 
                 maxHeight = topY[i];
             }
         }
@@ -87,7 +86,7 @@ public class TowerContest {
         for (int j = 0; j < currentIndex; j++) {
             int placedId = perm[j];
             int obstacleY = (currentId < placedId) ? baseY[j] + CUP_BASE_HEIGHT : topY[j];
-            if (obstacleY > dropY) { // PMD: Llaves agregadas
+            if (obstacleY > dropY) {
                 dropY = obstacleY;
             }
         }
@@ -97,7 +96,7 @@ public class TowerContest {
     public static void simulate(int n, int h) {
         String solution = solve(n, h);
 
-        if (handleSimulationErrors(solution, n, h)) { // PMD: Llaves agregadas
+        if (handleSimulationErrors(solution, n, h)) { 
             return;
         }
 
@@ -129,7 +128,7 @@ public class TowerContest {
     }
 
     private static void animateTowerCreation(int[] idsToDrop, int targetHeight, String solution) {
-        if (lastSimulatedTower != null) { // PMD: Llaves agregadas
+        if (lastSimulatedTower != null) {
             lastSimulatedTower.makeInvisible();
         }
 

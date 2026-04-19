@@ -13,6 +13,5 @@ public class NormalCup extends Cup {
     
     @Override
     protected void applyVisualDistinction() {
-        // La taza normal no tiene ningún cambio visual extra
     }
 }

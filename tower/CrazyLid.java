@@ -20,7 +20,6 @@ public class CrazyLid extends Lid {
         }
     }
 
-    // --- MAGIA OCP ---
     @Override
     public int getInsertionIndex(TowerContext context) {
         return 0; // Siempre fuerza su inserción en el índice 0

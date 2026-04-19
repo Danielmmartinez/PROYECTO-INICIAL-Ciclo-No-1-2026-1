@@ -11,10 +11,9 @@ public class OpenerCup extends Cup {
         this.base.changeColor("magenta");
     }
 
-    // --- MAGIA OCP ---
     @Override
     public void onPushed(TowerContext context) {
-        // La taza misma le pide a la torre que quite las tapas
+        
         context.removeAllLids();
     }
 }

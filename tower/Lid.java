@@ -81,10 +81,10 @@ public abstract class Lid implements TowerElement {
     }
 
     @Override
-    public void onPushed(TowerContext context) { /* Hook vacío por defecto */ }
+    public void onPushed(TowerContext context) {}
 
     @Override
-    public void onRemoved(TowerContext context) { /* Hook vacío por defecto */ }
+    public void onRemoved(TowerContext context) {}
 
     @Override
     public int[] getDimensions() {
@@ -92,13 +92,13 @@ public abstract class Lid implements TowerElement {
     }
     
     @Override
-    public String getColor() { return DEFAULT_COLOR; } // O el atributo color si lo añades
+    public String getColor() { return DEFAULT_COLOR; } 
     
     @Override
     public void setColor(String color) { 
         visual.changeColor(color); 
         knob.changeColor(color);
-        applyVisualDistinction(); // Aquí Lid llama a la distinción visual de su "hija"
+        applyVisualDistinction();
     }
 
     // --- MÉTODOS VISUALES ORIGINALES ---
@@ -130,20 +130,19 @@ public abstract class Lid implements TowerElement {
     }
     
     
-    // --- POLIMORFISMO PURO (Sin Atajos) ---
+    // --- POLIMORFISMO PURO  ---
 
     @Override
     public String getCategory() { return "lid"; }
 
     @Override
-    public int getRenderLayer() { return 1; } // Las tapas se dibujan de últimas (frente)
+    public int getRenderLayer() { return 1; } 
 
     @Override
-    public int getWallThickness() { return 0; } // Las tapas no tienen paredes internas
+    public int getWallThickness() { return 0; } 
 
     @Override
     public void updateContextualState(List<TowerElement> belowElements) {
-        // La tapa mira qué hay debajo de ella y decide por sí misma si está cubriendo a su taza
         boolean covering = belowElements.stream()
                 .anyMatch(e -> e.getId() == this.id && "cup".equals(e.getCategory()));
         this.isCoveringState = covering;
@@ -152,7 +151,6 @@ public abstract class Lid implements TowerElement {
 
     @Override
     public int getDropObstacleY(int fallingObjWidth, int myTopY, int myBaseY) {
-        // Cualquier cosa que caiga sobre una tapa, SIEMPRE choca en la parte de arriba
         return myTopY;
     }
     

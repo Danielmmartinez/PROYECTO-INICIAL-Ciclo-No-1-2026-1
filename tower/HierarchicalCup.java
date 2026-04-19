@@ -14,7 +14,6 @@ public class HierarchicalCup extends Cup {
         this.rightWall.changeColor("black");
     }
 
-    // --- MAGIA OCP ---
     @Override
     public int getInsertionIndex(TowerContext context) {
         List<TowerElement> elements = context.getStackedElements();
@@ -38,7 +37,6 @@ public class HierarchicalCup extends Cup {
     @Override
     public boolean canBeRemoved(TowerContext context) {
         List<TowerElement> elements = context.getStackedElements();
-        // Si es el primer elemento (índice 0, el fondo), no se puede quitar
         if (!elements.isEmpty() && elements.indexOf(this) == 0) {
             context.reportError("La taza jerárquica está en el fondo y no se deja quitar.");
             return false;

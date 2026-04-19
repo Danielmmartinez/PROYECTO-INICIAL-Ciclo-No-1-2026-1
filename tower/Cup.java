@@ -13,7 +13,7 @@ public abstract class Cup implements TowerElement {
     //------Constantes------------
     protected static final int WALL_THICKNESS = 10;
     protected static final int WIDTH_MULTIPLIER = 20;
-    protected static final int HEIGHT_MULTIPLIER = 10; // Extraído de las físicas de la Torre
+    protected static final int HEIGHT_MULTIPLIER = 10;
     protected static final int INITIAL_X = 70;
     protected static final int INITIAL_Y = 15;
     
@@ -77,29 +77,27 @@ public abstract class Cup implements TowerElement {
 
     @Override
     public boolean canBePushed(TowerContext context) { 
-        return true; // Por defecto, todas las tazas pueden entrar
+        return true; 
     }
 
     @Override
     public boolean canBeRemoved(TowerContext context) { 
-        return true; // Por defecto, todas las tazas se pueden quitar
+        return true; 
     }
 
     @Override
     public int getInsertionIndex(TowerContext context) {
-        // Por defecto, se apila al final (arriba del todo)
         return context.getStackedElements().size();
     }
 
     @Override
-    public void onPushed(TowerContext context) { /* Hook vacío por defecto */ }
+    public void onPushed(TowerContext context) {}
 
     @Override
-    public void onRemoved(TowerContext context) { /* Hook vacío por defecto */ }
+    public void onRemoved(TowerContext context) {}
 
     @Override
     public int[] getDimensions() {
-        // Retorna las dimensiones físicas para el motor de colisiones
         return new int[]{ id * WIDTH_MULTIPLIER, height * HEIGHT_MULTIPLIER };
     }
     
@@ -145,25 +143,23 @@ public abstract class Cup implements TowerElement {
     }
     
     
-    // --- POLIMORFISMO PURO (Sin Atajos) ---
+    // --- POLIMORFISMO PURO  ---
 
     @Override
     public String getCategory() { return "cup"; }
 
     @Override
-    public int getRenderLayer() { return 0; } // Las tazas se dibujan primero (fondo)
+    public int getRenderLayer() { return 0; } 
 
     @Override
     public int getWallThickness() { return WALL_THICKNESS; }
 
     @Override
     public void updateContextualState(List<TowerElement> belowElements) {
-        // Las tazas no cambian su estado basado en lo que tienen debajo
     }
 
     @Override
     public int getDropObstacleY(int fallingObjWidth, int myTopY, int myBaseY) {
-        // La taza calcula su propio "hueco". Si el objeto cabe, cae hasta la base; si no, choca arriba.
         int innerGap = (id * WIDTH_MULTIPLIER) - (WALL_THICKNESS * 2);
         return (fallingObjWidth <= innerGap) ? myBaseY : myTopY;
     }

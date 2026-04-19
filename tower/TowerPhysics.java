@@ -23,7 +23,6 @@ public class TowerPhysics {
             int h = dims[1];
 
             if (applyToView) {
-                // PURE OCP: El objeto se actualiza solo (ej. tapas activando perillas)
                 obj.updateContextualState(placed);
             }
 
@@ -33,7 +32,6 @@ public class TowerPhysics {
             placed.add(obj);
             topYMap.put(obj, finalY);
             
-            // Calculamos la base interna polimórficamente sin saber si es taza o tapa
             baseYMap.put(obj, finalY + h - obj.getWallThickness());
 
             if (finalY < highestY) {
@@ -58,7 +56,6 @@ public class TowerPhysics {
         int dropY = floorY;
         
         for (TowerElement p : placed) {
-            // El objeto obstáculo determina polimórficamente dónde detener al objeto que cae
             int obstacleY = p.getDropObstacleY(fallingWidth, topYMap.get(p), baseYMap.get(p));
             if (obstacleY < dropY) {
                 dropY = obstacleY;

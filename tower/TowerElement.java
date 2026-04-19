@@ -9,10 +9,10 @@ public interface TowerElement {
     void setColor(String color);
     
     // --- Identidad Universal ---
-    String getCategory(); // Retorna "cup" o "lid"
-    int getRenderLayer(); // 0 para dibujar al fondo, 1 para dibujar al frente
+    String getCategory(); 
+    int getRenderLayer(); 
     
-    // --- Comportamiento Polimórfico (Reemplaza a los "if") ---
+    // --- Comportamiento Polimórfico ---
     boolean canBePushed(TowerContext context);
     boolean canBeRemoved(TowerContext context);
     int getInsertionIndex(TowerContext context);

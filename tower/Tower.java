@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 public class Tower implements TowerContext {
 
     // --- Atributos de Estado ---
-    private final int maxHeight; // Eliminado 'width' (PMD)
+    private final int maxHeight;
     private boolean isVisible;
     private boolean lastOperationOk;
 
@@ -20,7 +20,6 @@ public class Tower implements TowerContext {
     private final TowerRenderer renderer;
 
     public Tower(int width, int maxHeight) {
-        // Se ignora el width internamente ya que no se usaba
         this.maxHeight = maxHeight;
         this.lastOperationOk = true;
         this.physicsEngine = new TowerPhysics();
@@ -147,12 +146,12 @@ public class Tower implements TowerContext {
         ids.sort(Collections.reverseOrder());
         
         List<TowerElement> newOrder = new ArrayList<>();
-        for (int id : ids) { // PMD: Llaves agregadas
+        for (int id : ids) { 
             newOrder.add(cups.get(id));
         }
 
         Collections.sort(ids);
-        for (int id : ids) { // PMD: Llaves agregadas
+        for (int id : ids) { 
             if (lids.containsKey(id)) {
                 newOrder.add(lids.get(id));
             }
@@ -251,7 +250,7 @@ public class Tower implements TowerContext {
         String[][] items = new String[stackedElements.size()][2];
         for (int i = 0; i < stackedElements.size(); i++) {
             TowerElement o = stackedElements.get(i);
-            items[i][0] = o.getCategory(); // Ahora es dinámico
+            items[i][0] = o.getCategory(); 
             items[i][1] = String.valueOf(o.getId());
         }
         return items;
@@ -294,7 +293,7 @@ public class Tower implements TowerContext {
     @Override
     public void reportError(String message) {
         lastOperationOk = false;
-        if (isVisible) { // PMD: Llaves agregadas
+        if (isVisible) { 
             JOptionPane.showMessageDialog(null, message);
         }
     }

@@ -11,7 +11,6 @@ public class FearfulLid extends Lid {
         this.knob.changeColor("white");
     }
 
-    // --- MAGIA OCP ---
     @Override
     public boolean canBePushed(TowerContext context) {
         if (!context.hasCup(this.id)) {
