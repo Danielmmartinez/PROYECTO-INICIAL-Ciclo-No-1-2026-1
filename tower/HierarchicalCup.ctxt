@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=HierarchicalCup
+comment1.params=id
+comment1.target=HierarchicalCup(int)
+comment2.params=
+comment2.target=void\ applyVisualDistinction()
+comment3.params=context
+comment3.target=int\ getInsertionIndex(TowerContext)
+comment4.params=context
+comment4.target=boolean\ canBeRemoved(TowerContext)
+numComments=5

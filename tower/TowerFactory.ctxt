@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=TowerFactory
+comment1.params=
+comment1.target=TowerFactory()
+comment2.params=id\ type
+comment2.target=TowerElement\ createCup(int,\ java.lang.String)
+comment3.params=id\ type
+comment3.target=TowerElement\ createLid(int,\ java.lang.String)
+numComments=4

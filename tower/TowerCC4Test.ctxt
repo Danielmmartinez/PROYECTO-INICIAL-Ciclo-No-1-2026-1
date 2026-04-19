@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.target=TowerCC4Test
+comment1.params=
+comment1.target=void\ shouldLidCannotBePoppedIfCovering()
+comment10.params=
+comment10.target=void\ shouldHierarchicalMovesCorrectAmountOfSteps()
+comment2.params=
+comment2.target=void\ shouldMultipleCrazyLidsOrderAtBottom()
+comment3.params=
+comment3.target=void\ shouldOpenerCupRemovesMultipleLids()
+comment4.params=
+comment4.target=void\ shouldAnchorStopsHierarchicalPush()
+comment5.params=
+comment5.target=void\ shouldHierarchicalPushesCrazyLids()
+comment6.params=
+comment6.target=void\ shouldFearfulLidSpecificRemoveFails()
+comment7.params=
+comment7.target=void\ shouldOpenerCupInEmptyTower()
+comment8.params=
+comment8.target=void\ shouldAnchorCupSpecificRemoveFails()
+comment9.params=
+comment9.target=void\ shouldFearfulLidDoesNotAffectOthers()
+numComments=11

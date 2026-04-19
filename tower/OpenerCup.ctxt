@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=OpenerCup
+comment1.params=id
+comment1.target=OpenerCup(int)
+comment2.params=
+comment2.target=void\ applyVisualDistinction()
+comment3.params=context
+comment3.target=void\ onPushed(TowerContext)
+numComments=4

@@ -1,0 +1,8 @@
+#BlueJ class context
+comment0.target=NormalCup
+comment0.text=\r\n\ Taza\ est\u00E1ndar\ sin\ comportamientos\ especiales.\r\n\ Hereda\ toda\ la\ l\u00F3gica\ OCP\ por\ defecto\ de\ la\ clase\ Cup.\r\n
+comment1.params=id
+comment1.target=NormalCup(int)
+comment2.params=
+comment2.target=void\ applyVisualDistinction()
+numComments=3

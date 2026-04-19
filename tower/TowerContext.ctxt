@@ -1,0 +1,19 @@
+#BlueJ class context
+comment0.target=TowerContext
+comment0.text=\r\n\ Contrato\ que\ expone\ m\u00E9todos\ seguros\ de\ la\ torre\ hacia\ los\ elementos.\r\n\ Cumple\ con\ SRP\ aislando\ la\ manipulaci\u00F3n\ del\ estado\ interno\ de\ la\ Torre.\r\n
+comment1.params=
+comment1.target=java.util.List\ getStackedElements()
+comment1.text=Retorna\ una\ lista\ de\ solo\ lectura\ (o\ copia)\ de\ los\ elementos\ apilados\ actualmente.
+comment2.params=
+comment2.target=void\ removeAllLids()
+comment2.text=Permite\ a\ un\ elemento\ (como\ OpenerCup)\ eliminar\ todas\ las\ tapas\ de\ la\ torre.
+comment3.params=message
+comment3.target=void\ reportError(java.lang.String)
+comment3.text=Permite\ a\ un\ elemento\ enviar\ mensajes\ a\ la\ interfaz\ de\ usuario.
+comment4.params=id
+comment4.target=boolean\ hasCup(int)
+comment4.text=Consulta\ si\ existe\ una\ taza\ con\ un\ ID\ espec\u00EDfico\ en\ la\ torre.
+comment5.params=id
+comment5.target=boolean\ hasLid(int)
+comment5.text=Consulta\ si\ existe\ una\ tapa\ con\ un\ ID\ espec\u00EDfico\ en\ la\ torre.
+numComments=6

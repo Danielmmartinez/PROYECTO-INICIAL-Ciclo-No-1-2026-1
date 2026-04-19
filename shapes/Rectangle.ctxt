@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.target=Rectangle
+comment0.text=\r\n\ Representa\ un\ rectangulo\ que\ hereda\ de\ Shape.\r\n\ Es\ la\ figura\ base\ utilizada\ por\ la\ fabrica\ de\ la\ clase\ madre.\r\n
+comment1.params=
+comment1.target=Rectangle()
+comment1.text=\r\n\ Constructor\ por\ defecto.\ \r\n\ Define\ la\ apariencia\ inicial\ del\ rectangulo.\r\n
+comment2.params=newHeight\ newWidth
+comment2.target=void\ changeSize(int,\ int)
+comment2.text=\r\n\ Actualiza\ las\ dimensiones\ del\ rectangulo.\r\n\ Implementa\ el\ contrato\ obligatorio\ de\ la\ clase\ Shape.\r\n
+comment3.params=
+comment3.target=java.awt.Shape\ getShapeGeometry()
+comment3.text=\r\n\ Retorna\ la\ geometr\u00EDa\ espec\u00EDfica\ para\ ser\ dibujada\ en\ el\ Canvas.\r\n
+numComments=4

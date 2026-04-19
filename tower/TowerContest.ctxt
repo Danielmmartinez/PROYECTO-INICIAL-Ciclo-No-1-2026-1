@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.target=TowerContest
+comment1.params=
+comment1.target=TowerContest()
+comment10.params=idsToDrop\ targetHeight\ solution
+comment10.target=void\ animateTowerCreation(int[],\ int,\ java.lang.String)
+comment2.params=n\ h
+comment2.target=java.lang.String\ solve(int,\ int)
+comment3.params=n\ targetH\ depth\ perm\ used\ result
+comment3.target=boolean\ solveDFS(int,\ int,\ int,\ int[],\ boolean[],\ int[])
+comment4.params=result
+comment4.target=java.lang.String\ formatSolution(int[])
+comment5.params=perm
+comment5.target=int\ calculateStrictPhysicsHeight(int[])
+comment6.params=currentIndex\ currentId\ perm\ baseY\ topY
+comment6.target=int\ calculateDropY(int,\ int,\ int[],\ int[],\ int[])
+comment7.params=n\ h
+comment7.target=void\ simulate(int,\ int)
+comment8.params=solution\ n\ h
+comment8.target=boolean\ handleSimulationErrors(java.lang.String,\ int,\ int)
+comment9.params=solution
+comment9.target=int[]\ parseHeightsToIds(java.lang.String)
+numComments=11

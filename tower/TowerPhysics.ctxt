@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=TowerPhysics
+comment1.params=elements\ canvasWidth\ canvasHeight\ applyToView
+comment1.target=int\ calculatePhysics(java.util.List,\ int,\ int,\ boolean)
+comment2.params=elements\ maxHeight\ canvasWidth\ canvasHeight
+comment2.target=boolean\ exceedsMaxHeight(java.util.List,\ int,\ int,\ int)
+comment3.params=fallingWidth\ placed\ topYMap\ baseYMap\ floorY
+comment3.target=int\ findDropY(int,\ java.util.List,\ java.util.Map,\ java.util.Map,\ int)
+numComments=4

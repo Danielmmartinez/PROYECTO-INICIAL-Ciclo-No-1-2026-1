@@ -1,0 +1,9 @@
+#BlueJ class context
+comment0.target=AnchorCup
+comment1.params=id
+comment1.target=AnchorCup(int)
+comment2.params=
+comment2.target=void\ applyVisualDistinction()
+comment3.params=context
+comment3.target=boolean\ canBeRemoved(TowerContext)
+numComments=4

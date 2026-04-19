@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.target=TowerCC2Test
+comment0.text=\r\n\ Propuesta\ de\ prueba\ colectiva\ para\ TowerCC2Test.\r\n
+comment1.params=
+comment1.target=void\ shouldReturnEmptyIfHeightIsOptimal()
+comment1.text=\r\n\ Prueba\ propuesta\ para\ el\ repositorio\ colectivo.\r\n\ Verifica\ que\ si\ la\ torre\ ya\ est\u00E1\ en\ su\ altura\ m\u00EDnima\ \u00F3ptima,\r\n\ swapToReduce()\ no\ recomiende\ ning\u00FAn\ movimiento\ inv\u00E1lido.\r\n
+comment2.params=
+comment2.target=void\ shouldNotPushDuplicateCup()
+comment3.params=
+comment3.target=void\ shouldNotPushDuplicateLid()
+comment4.params=
+comment4.target=void\ shouldPopCupCorrectly()
+comment5.params=
+comment5.target=void\ shouldFailPopCupOnEmptyTower()
+comment6.params=
+comment6.target=void\ shouldRemoveSpecificCup()
+comment7.params=
+comment7.target=void\ shouldFailToRemoveNonExistentCup()
+comment8.params=
+comment8.target=void\ shouldOrderTowerCorrectly()
+comment9.params=
+comment9.target=void\ shouldReverseTower()
+numComments=10

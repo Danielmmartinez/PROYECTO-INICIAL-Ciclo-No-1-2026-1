@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=CrazyLid
+comment1.params=id
+comment1.target=CrazyLid(int)
+comment2.params=
+comment2.target=void\ applyVisualDistinction()
+comment3.params=
+comment3.target=void\ updateKnobVisibility()
+comment4.params=context
+comment4.target=int\ getInsertionIndex(TowerContext)
+numComments=5
